@@ -1,0 +1,55 @@
+trigger:
+- main
+
+pool:
+  name: DevOpsLinuxPoolNew
+
+stages:
+- stage: Build
+  displayName: Build Stage
+  jobs:
+  - job: BuildDjangoServer
+    displayName: Build Django Server
+    steps:
+    - script: |
+        cd django_server
+        python -m venv .djangoEnv
+        source .djangoEnv/bin/activate
+        pip install --upgrade pip
+        pip install -r requirements.txt
+      displayName: Install Django Service Dependencies
+
+  - job: BuildDaphneServer
+    displayName: Build Daphne Server
+    steps:
+      - script: |
+          cd daphne_server
+          python -m venv .daphneEnv
+          source .daphneEnv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+        displayName: Install Daphne Service Dependencies
+
+  - job: BuildWhisperxService
+    displayName: Build Whisperx Service
+    steps:
+    - script: |
+        cd whisperx_service
+        python -m venv .whisperxEnv
+        source .whisperxEnv/bin/activate
+        pip install --upgrade pip
+        pip install -r requirements.txt
+      displayName: Install Whisperx Service Dependencies
+
+  - job: RunDaphneServiceTests
+    displayName: Run Daphne Service Tests
+    dependsOn:
+      - BuildDaphneServer
+    steps:
+    - script: | 
+        echo "Daphne Service Tests Running..."
+        cd daphne_server
+        source .daphneEnv/bin/activate
+        pytest tests.py
+      displayName: Run Django Service Tests
+
